@@ -1,0 +1,33 @@
+substitutions:
+  _IMAGE: "us-central1-docker.pkg.dev/modular-edge-470406-g3/build-repo/web_cloudbuild"
+
+steps:
+# Step 1: Build WAR with Maven
+- name: 'maven:3.9.9-eclipse-temurin-21'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - 'mvn -B clean package'
+
+# Step 2: Build Docker image
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', '${_IMAGE}:$SHORT_SHA', '.' ]
+
+# Step 3: Push Docker image
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'push', '${_IMAGE}:$SHORT_SHA' ]
+
+# Step 4: Deploy to Cloud Run
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      gcloud run deploy java-tomcat-cloudrun \
+        --image=${_IMAGE}:$SHORT_SHA \
+        --region=us-central1 \
+        --platform=managed \
+        --allow-unauthenticated
+
+images:
+- '${_IMAGE}:$SHORT_SHA'
