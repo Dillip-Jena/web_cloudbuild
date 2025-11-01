@@ -1,6 +1,10 @@
 substitutions:
   _IMAGE: "us-central1-docker.pkg.dev/modular-edge-470406-g3/build-repo/web_cloudbuild"
 
+# 🌟 THIS SECTION TO FIX THE LOGGING ISSUE 🌟
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 steps:
 # Step 1: Build WAR with Maven
 - name: 'maven:3.9.9-eclipse-temurin-21'
